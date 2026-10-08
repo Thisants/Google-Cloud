@@ -15,8 +15,9 @@ Google Ads e Meta ficam **fora do escopo por enquanto**.
 |---|---|
 | 01 Conexão com GA4 | ✅ funcionando |
 | 02 Coleta (30 dias → DataFrame + CSV) | ✅ concluída |
-| 03 Tratamento (limpar e organizar o CSV) | ✅ esta versão |
-| 04 em diante | ⏳ não iniciadas |
+| 03 Tratamento (limpar e organizar o CSV) | ✅ concluída |
+| 04 Análise (resumo, dia da semana, comparação) | ✅ esta versão |
+| 05 em diante | ⏳ não iniciadas |
 
 ## Tecnologias
 Python 3.11 · google-analytics-data (GA4 Data API) · pandas · python-dotenv · pytest
@@ -28,6 +29,7 @@ google-analytics-project/
 ├── 01-conexao-google/       # etapa 01
 ├── 02-coleta-dados/         # etapa 02 (main.py, README, dados/)
 ├── 03-tratamento/           # etapa 03 (main.py, README, dados/)
+├── 04-analise/              # etapa 04 (main.py, README, dados/)
 ├── tests/
 ├── credenciais/             # JSON da Service Account (ignorado pelo Git)
 ├── .env.example · .gitignore · pyproject.toml · requirements.txt
@@ -53,6 +55,7 @@ Se o PowerShell bloquear a ativação: `Set-ExecutionPolicy -Scope CurrentUser R
 ```powershell
 python 02-coleta-dados\main.py
 python 03-tratamento\main.py
+python 04-analise\main.py
 pytest
 ```
 
@@ -63,6 +66,6 @@ pytest
 - Se a chave vazar: apague-a no Google Cloud e gere outra.
 
 ## Limitações
-- Só GA4, só 30 dias, só `date` + 3 métricas (a etapa 03 trata apenas esse relatório).
+- Só GA4, só 30 dias, só `date` + 3 métricas (as etapas 03 e 04 usam apenas esse relatório).
 - Sem paginação, sem banco, sem dashboard.
 - Dados do GA4 podem demorar até 24–48 h para estabilizar.
