@@ -16,11 +16,14 @@ Google Ads e Meta ficam **fora do escopo por enquanto**.
 | 01 Conexão com GA4 | ✅ funcionando |
 | 02 Coleta (30 dias → DataFrame + CSV) | ✅ concluída |
 | 03 Tratamento (limpar e organizar o CSV) | ✅ concluída |
-| 04 Análise (resumo, dia da semana, comparação) | ✅ esta versão |
-| 05 em diante | ⏳ não iniciadas |
+| 04 Análise (resumo, dia da semana, comparação) | ✅ concluída |
+| 05 Search Console (coleta dos últimos 30 dias) | ✅ esta versão |
+| 06 Integração de fontes (GA4 + Search Console) | ⏳ |
+| 07 Banco de dados **PostgreSQL** (armazenamento permanente) | ⏳ |
+| 08 a 12 (dashboard, insights, analytics agêntico, API, documentação) | ⏳ |
 
 ## Tecnologias
-Python 3.11 · google-analytics-data (GA4 Data API) · pandas · python-dotenv · pytest
+Python 3.11+ · google-analytics-data (GA4 Data API) · google-api-python-client (Search Console API) · pandas · python-dotenv · pytest
 
 ## Estrutura
 ```
@@ -30,6 +33,7 @@ google-analytics-project/
 ├── 02-coleta-dados/         # etapa 02 (main.py, README, dados/)
 ├── 03-tratamento/           # etapa 03 (main.py, README, dados/)
 ├── 04-analise/              # etapa 04 (main.py, README, dados/)
+├── 05-search-console/       # etapa 05 (main.py, README, dados/)
 ├── tests/
 ├── credenciais/             # JSON da Service Account (ignorado pelo Git)
 ├── .env.example · .gitignore · pyproject.toml · requirements.txt
@@ -41,6 +45,7 @@ google-analytics-project/
 2. GA4 → Administrador → Acesso à propriedade: adicione o e-mail da Service Account como **Leitor**.
 3. Salve o JSON em `credenciais/` (a pasta é ignorada pelo Git).
 4. Copie `.env.example` para `.env` e preencha `GA4_PROPERTY_ID` e `GOOGLE_APPLICATION_CREDENTIALS`.
+5. (Etapa 05) Ative a **Google Search Console API** no mesmo projeto, adicione o e-mail da Service Account como usuário na propriedade do Search Console e preencha `GSC_SITE_URL` no `.env`. Detalhes em `05-search-console/README.md`.
 
 ## Instalação (Windows / PowerShell no VS Code)
 ```powershell
@@ -56,6 +61,7 @@ Se o PowerShell bloquear a ativação: `Set-ExecutionPolicy -Scope CurrentUser R
 python 02-coleta-dados\main.py
 python 03-tratamento\main.py
 python 04-analise\main.py
+python 05-search-console\main.py
 pytest
 ```
 
@@ -66,6 +72,7 @@ pytest
 - Se a chave vazar: apague-a no Google Cloud e gere outra.
 
 ## Limitações
-- Só GA4, só 30 dias, só `date` + 3 métricas (as etapas 03 e 04 usam apenas esse relatório).
-- Sem paginação, sem banco, sem dashboard.
+- Só 30 dias. GA4: apenas `date` + 3 métricas (as etapas 03 e 04 usam só esse relatório). Search Console: relatórios por data e por consulta + página.
+- Os CSVs são sobrescritos a cada execução: o armazenamento permanente virá com o PostgreSQL (etapa 07).
+- Sem dashboard.
 - Dados do GA4 podem demorar até 24–48 h para estabilizar.
