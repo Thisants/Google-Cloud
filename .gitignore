@@ -20,6 +20,10 @@ data/
 *.db
 *.sqlite
 
+# --- Backups do banco (contêm dados reais do negócio) ---
+backups/
+*.dump
+
 # --- Python ---
 __pycache__/
 *.py[cod]

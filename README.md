@@ -17,13 +17,13 @@ Google Ads e Meta ficam **fora do escopo por enquanto**.
 | 02 Coleta (30 dias → DataFrame + CSV) | ✅ concluída |
 | 03 Tratamento (limpar e organizar o CSV) | ✅ concluída |
 | 04 Análise (resumo, dia da semana, comparação) | ✅ concluída |
-| 05 Search Console (coleta dos últimos 30 dias) | ✅ esta versão |
-| 06 Integração de fontes (GA4 + Search Console) | ⏳ |
-| 07 Banco de dados **PostgreSQL** (armazenamento permanente) | ⏳ |
+| 05 Search Console (coleta dos últimos 30 dias) | ✅ concluída |
+| 06 Integração de fontes (GA4 + Search Console, por data) | ✅ concluída |
+| 07 Banco de dados **PostgreSQL** (armazenamento permanente) | ✅ esta versão |
 | 08 a 12 (dashboard, insights, analytics agêntico, API, documentação) | ⏳ |
 
 ## Tecnologias
-Python 3.11+ · google-analytics-data (GA4 Data API) · google-api-python-client (Search Console API) · pandas · python-dotenv · pytest
+Python 3.11+ · google-analytics-data (GA4 Data API) · google-api-python-client (Search Console API) · PostgreSQL + psycopg · pandas · python-dotenv · pytest
 
 ## Estrutura
 ```
@@ -34,6 +34,8 @@ google-analytics-project/
 ├── 03-tratamento/           # etapa 03 (main.py, README, dados/)
 ├── 04-analise/              # etapa 04 (main.py, README, dados/)
 ├── 05-search-console/       # etapa 05 (main.py, README, dados/)
+├── 06-integracao-fontes/    # etapa 06 (main.py, README, dados/)
+├── 07-banco-dados/          # etapa 07 (main.py, README)
 ├── tests/
 ├── credenciais/             # JSON da Service Account (ignorado pelo Git)
 ├── .env.example · .gitignore · pyproject.toml · requirements.txt
@@ -46,6 +48,7 @@ google-analytics-project/
 3. Salve o JSON em `credenciais/` (a pasta é ignorada pelo Git).
 4. Copie `.env.example` para `.env` e preencha `GA4_PROPERTY_ID` e `GOOGLE_APPLICATION_CREDENTIALS`.
 5. (Etapa 05) Ative a **Google Search Console API** no mesmo projeto, adicione o e-mail da Service Account como usuário na propriedade do Search Console e preencha `GSC_SITE_URL` no `.env`. Detalhes em `05-search-console/README.md`.
+6. (Etapa 07) Instale o PostgreSQL, crie o banco e o usuário e preencha `DB_*` no `.env`. Passo a passo em `07-banco-dados/README.md`.
 
 ## Instalação (Windows / PowerShell no VS Code)
 ```powershell
@@ -62,6 +65,8 @@ python 02-coleta-dados\main.py
 python 03-tratamento\main.py
 python 04-analise\main.py
 python 05-search-console\main.py
+python 06-integracao-fontes\main.py
+python 07-banco-dados\main.py
 pytest
 ```
 
@@ -73,6 +78,7 @@ pytest
 
 ## Limitações
 - Só 30 dias. GA4: apenas `date` + 3 métricas (as etapas 03 e 04 usam só esse relatório). Search Console: relatórios por data e por consulta + página.
-- Os CSVs são sobrescritos a cada execução: o armazenamento permanente virá com o PostgreSQL (etapa 07).
+- Os CSVs são sobrescritos a cada coleta. O histórico permanente fica no PostgreSQL: rode a etapa 07 depois de cada coleta e **no máximo a cada ~3 semanas**, para não abrir buracos entre as janelas de 30 dias.
+- O cruzamento da etapa 06 é só por data (por página fica para uma melhoria futura).
 - Sem dashboard.
 - Dados do GA4 podem demorar até 24–48 h para estabilizar.

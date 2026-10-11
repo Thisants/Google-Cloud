@@ -3,5 +3,6 @@ google-api-python-client>=2.100
 google-auth>=2.20
 pandas>=2.0
 python-dotenv>=1.0
+psycopg[binary]>=3.2
 pytest>=8.0
 -e .
