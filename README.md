@@ -21,11 +21,13 @@ Google Ads e Meta ficam **fora do escopo por enquanto**.
 | 06 Integração de fontes (GA4 + Search Console, por data) | ✅ concluída |
 | 07 Banco de dados **PostgreSQL** (armazenamento permanente) | ✅ concluída |
 | 08 Dashboard (Streamlit, lendo do PostgreSQL) | ✅ concluída |
-| 09 Insights (riscos e oportunidades por regras) | ✅ esta versão |
-| 10 a 12 (analytics agêntico, API, documentação) | ⏳ |
+| 09 Insights (riscos e oportunidades por regras) | ✅ concluída |
+| 10 Analytics agêntico (IA conversa com os dados, só leitura) | ✅ concluída |
+| 11 API REST + rotina de atualização (agendável) | ✅ esta versão |
+| 12 Documentação / portfólio | ⏳ |
 
 ## Tecnologias
-Python 3.11+ · google-analytics-data (GA4 Data API) · google-api-python-client (Search Console API) · PostgreSQL + psycopg · Streamlit · pandas · python-dotenv · pytest
+Python 3.11+ · google-analytics-data (GA4 Data API) · google-api-python-client (Search Console API) · PostgreSQL + psycopg · Streamlit · API da Anthropic (Claude) · FastAPI + uvicorn · pandas · python-dotenv · pytest
 
 ## Estrutura
 ```
@@ -40,6 +42,8 @@ google-analytics-project/
 ├── 07-banco-dados/          # etapa 07 (main.py, README)
 ├── 08-dashboard/            # etapa 08 (app.py, README)
 ├── 09-insights/             # etapa 09 (main.py, README, dados/)
+├── 10-analytics-agentico/   # etapa 10 (main.py, README, dados/)
+├── 11-api-aplicacao/        # etapa 11 (API main.py, atualizar_tudo.py, README)
 ├── tests/
 ├── credenciais/             # JSON da Service Account (ignorado pelo Git)
 ├── .env.example · .gitignore · pyproject.toml · requirements.txt
@@ -53,6 +57,8 @@ google-analytics-project/
 4. Copie `.env.example` para `.env` e preencha `GA4_PROPERTY_ID` e `GOOGLE_APPLICATION_CREDENTIALS`.
 5. (Etapa 05) Ative a **Google Search Console API** no mesmo projeto, adicione o e-mail da Service Account como usuário na propriedade do Search Console e preencha `GSC_SITE_URL` no `.env`. Detalhes em `05-search-console/README.md`.
 6. (Etapa 07) Instale o PostgreSQL, crie o banco e o usuário e preencha `DB_*` no `.env`. Passo a passo em `07-banco-dados/README.md`.
+7. (Etapa 10) Crie uma chave de API da Anthropic e preencha `ANTHROPIC_API_KEY` no `.env`. Detalhes e cuidados de privacidade em `10-analytics-agentico/README.md`.
+8. (Etapa 11) Gere a chave da sua API (`python 11-api-aplicacao\main.py --gerar-chave`) e preencha `API_KEY` no `.env`. Detalhes em `11-api-aplicacao/README.md`.
 
 ## Instalação (Windows / PowerShell no VS Code)
 ```powershell
@@ -73,6 +79,9 @@ python 06-integracao-fontes\main.py
 python 07-banco-dados\main.py
 streamlit run 08-dashboard\app.py
 python 09-insights\main.py
+python 10-analytics-agentico\main.py
+python 11-api-aplicacao\main.py             # sobe a API (http://127.0.0.1:8000/docs)
+python 11-api-aplicacao\atualizar_tudo.py   # rotina completa de atualização (agendável)
 pytest
 ```
 
@@ -86,5 +95,7 @@ pytest
 - Só 30 dias. GA4: apenas `date` + 3 métricas (as etapas 03 e 04 usam só esse relatório). Search Console: relatórios por data e por consulta + página.
 - Os CSVs são sobrescritos a cada coleta. O histórico permanente fica no PostgreSQL: rode a etapa 07 depois de cada coleta e **no máximo a cada ~3 semanas**, para não abrir buracos entre as janelas de 30 dias.
 - O cruzamento da etapa 06 é só por data (por página fica para uma melhoria futura).
+- A API (etapa 11) é somente leitura, exige chave no cabeçalho `X-API-Key` e, por padrão, só aceita conexões deste computador (sem HTTPS).
+- A etapa 10 usa a API da Anthropic (internet e custo por uso) e envia à IA a pergunta e os resultados das ferramentas, não a senha do banco nem as credenciais do Google.
 - O dashboard só lê o banco e roda apenas no seu computador (localhost).
 - Dados do GA4 podem demorar até 24–48 h para estabilizar.

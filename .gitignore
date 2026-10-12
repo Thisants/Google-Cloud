@@ -20,6 +20,10 @@ data/
 *.db
 *.sqlite
 
+# --- Logs da rotina de atualização ---
+logs/
+*.log
+
 # --- Backups do banco (contêm dados reais do negócio) ---
 backups/
 *.dump
