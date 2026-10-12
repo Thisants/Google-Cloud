@@ -4,5 +4,6 @@ google-auth>=2.20
 pandas>=2.0
 python-dotenv>=1.0
 psycopg[binary]>=3.2
+streamlit>=1.30
 pytest>=8.0
 -e .

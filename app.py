@@ -6,7 +6,15 @@ O navegador abre em http://localhost:8501  (se pedir e-mail no terminal, aperte 
 
 O dashboard SÓ LÊ do banco. Para atualizar os dados: rode as etapas de coleta e a 07 e clique em "Atualizar dados".
 """
+import sys
 from datetime import timedelta
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+for candidate in (PROJECT_ROOT, PROJECT_ROOT / "src"):
+    path = str(candidate)
+    if candidate.exists() and path not in sys.path:
+        sys.path.insert(0, path)
 
 import streamlit as st
 
@@ -59,6 +67,14 @@ def show_kpis(kpis):
         column.metric(kpi["label"], fmt_value(kpi["value"], kpi["kind"]), fmt_delta(kpi["delta"], kpi["delta_kind"]))
 
 
+def refresh_data():
+    st.cache_data.clear()
+    if hasattr(st, "rerun"):
+        st.rerun()
+    else:
+        st.experimental_rerun()
+
+
 def main():
     st.set_page_config(page_title="Analytics — GA4 + Search Console", layout="wide")
     st.title("Analytics: GA4 + Search Console")
@@ -80,8 +96,7 @@ def main():
         default_start = max(first, last - timedelta(days=29))
         period = st.date_input("Período", value=(default_start, last), min_value=first, max_value=last)
         if st.button("Atualizar dados"):
-            st.cache_data.clear()
-            st.rerun()
+            refresh_data()
         st.caption(f"Dados disponíveis: {first:%d/%m/%Y} a {last:%d/%m/%Y}")
     if len(period) != 2:
         st.info("Selecione a data inicial e a data final no filtro lateral.")

@@ -19,11 +19,13 @@ Google Ads e Meta ficam **fora do escopo por enquanto**.
 | 04 Análise (resumo, dia da semana, comparação) | ✅ concluída |
 | 05 Search Console (coleta dos últimos 30 dias) | ✅ concluída |
 | 06 Integração de fontes (GA4 + Search Console, por data) | ✅ concluída |
-| 07 Banco de dados **PostgreSQL** (armazenamento permanente) | ✅ esta versão |
-| 08 a 12 (dashboard, insights, analytics agêntico, API, documentação) | ⏳ |
+| 07 Banco de dados **PostgreSQL** (armazenamento permanente) | ✅ concluída |
+| 08 Dashboard (Streamlit, lendo do PostgreSQL) | ✅ concluída |
+| 09 Insights (riscos e oportunidades por regras) | ✅ esta versão |
+| 10 a 12 (analytics agêntico, API, documentação) | ⏳ |
 
 ## Tecnologias
-Python 3.11+ · google-analytics-data (GA4 Data API) · google-api-python-client (Search Console API) · PostgreSQL + psycopg · pandas · python-dotenv · pytest
+Python 3.11+ · google-analytics-data (GA4 Data API) · google-api-python-client (Search Console API) · PostgreSQL + psycopg · Streamlit · pandas · python-dotenv · pytest
 
 ## Estrutura
 ```
@@ -36,6 +38,8 @@ google-analytics-project/
 ├── 05-search-console/       # etapa 05 (main.py, README, dados/)
 ├── 06-integracao-fontes/    # etapa 06 (main.py, README, dados/)
 ├── 07-banco-dados/          # etapa 07 (main.py, README)
+├── 08-dashboard/            # etapa 08 (app.py, README)
+├── 09-insights/             # etapa 09 (main.py, README, dados/)
 ├── tests/
 ├── credenciais/             # JSON da Service Account (ignorado pelo Git)
 ├── .env.example · .gitignore · pyproject.toml · requirements.txt
@@ -67,6 +71,8 @@ python 04-analise\main.py
 python 05-search-console\main.py
 python 06-integracao-fontes\main.py
 python 07-banco-dados\main.py
+streamlit run 08-dashboard\app.py
+python 09-insights\main.py
 pytest
 ```
 
@@ -80,5 +86,5 @@ pytest
 - Só 30 dias. GA4: apenas `date` + 3 métricas (as etapas 03 e 04 usam só esse relatório). Search Console: relatórios por data e por consulta + página.
 - Os CSVs são sobrescritos a cada coleta. O histórico permanente fica no PostgreSQL: rode a etapa 07 depois de cada coleta e **no máximo a cada ~3 semanas**, para não abrir buracos entre as janelas de 30 dias.
 - O cruzamento da etapa 06 é só por data (por página fica para uma melhoria futura).
-- Sem dashboard.
+- O dashboard só lê o banco e roda apenas no seu computador (localhost).
 - Dados do GA4 podem demorar até 24–48 h para estabilizar.
