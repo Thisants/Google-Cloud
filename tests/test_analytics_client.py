@@ -3,12 +3,17 @@ from datetime import date
 from types import SimpleNamespace as NS
 
 import pandas as pd
+import pytest
+
+from google.api_core import exceptions as gexc
 
 from ga_project.analytics_client import (
+    _run_report,
     fill_missing_dates,
     last_n_days_range,
     response_to_dataframe,
 )
+from ga_project.errors import GA4ProjectError
 
 METRICS = ("activeUsers", "sessions", "screenPageViews")
 
@@ -69,3 +74,14 @@ def test_resposta_vazia_gera_dataframe_vazio_com_colunas():
     df = response_to_dataframe(fake_response([]))
     assert df.empty
     assert list(df.columns) == ["date", *METRICS]
+
+
+def test_run_report_ignora_erro_sem_atributo_message():
+    class FakeClient:
+        def run_report(self, request):
+            exc = gexc.InvalidArgument("consulta inválida")
+            delattr(exc, "message")
+            raise exc
+
+    with pytest.raises(GA4ProjectError, match="consulta inválida"):
+        _run_report(FakeClient(), object())

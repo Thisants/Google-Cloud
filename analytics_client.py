@@ -50,6 +50,16 @@ def build_request(
     )
 
 
+def _safe_error_detail(exc) -> str:
+    """Converte a mensagem de erro sem depender de atributos internos do SDK."""
+    message = getattr(exc, "message", None)
+    if message is not None:
+        return str(message)
+    if getattr(exc, "args", None):
+        return str(exc.args[0])
+    return exc.__class__.__name__
+
+
 def _run_report(client, request: RunReportRequest):
     """Envia o pedido ao GA4 e traduz os erros mais comuns para mensagens claras."""
     try:
@@ -61,9 +71,10 @@ def _run_report(client, request: RunReportRequest):
             "como Leitor/Viewer na propriedade GA4."
         ) from exc
     except gexc.InvalidArgument as exc:
+        detail = _safe_error_detail(exc)
         raise GA4ProjectError(
-            f"Consulta inválida (400): nome de métrica/dimensão errado, combinação "
-            f"incompatível ou datas inválidas. Detalhe: {exc.message}"
+            "Consulta inválida (400): nome de métrica/dimensão errado, combinação "
+            f"incompatível ou datas inválidas. Detalhe: {detail}"
         ) from exc
     except gexc.NotFound as exc:
         raise GA4ProjectError("Propriedade não encontrada (404). Confira o GA4_PROPERTY_ID.") from exc
