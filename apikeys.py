@@ -15,7 +15,7 @@ import pandas as pd
 
 from ga_project.clientes import get_cliente
 from ga_project.dashboard_data import fetch_df
-from ga_project.database import _sql
+from ga_project.database import _sql, exec_statement
 from ga_project.errors import GA4ProjectError
 
 ROLES = {"admin", "cliente"}
@@ -55,7 +55,7 @@ def create_key(conn, *, papel: str, nome: str, cliente_id: str | None = None) ->
     key_id = secrets.token_hex(4)
     key = f"ga_{key_id}_{secrets.token_urlsafe(32)}"
     try:
-        conn.cursor().execute(
+        exec_statement(conn, 
             _sql(conn, "INSERT INTO api_chaves (id, cliente_id, papel, nome, hash_chave) "
                        "VALUES (:id, :cliente, :papel, :nome, :hash)"),
             {"id": key_id, "cliente": cliente_id, "papel": papel, "nome": nome.strip(), "hash": hash_key(key)},
@@ -93,7 +93,7 @@ def revoke_key(conn, key_id: str) -> None:
     exists = fetch_df(conn, "SELECT id FROM api_chaves WHERE id = :id", {"id": key_id})
     if exists.empty:
         raise GA4ProjectError(f"Chave '{key_id}' não encontrada.")
-    conn.cursor().execute(_sql(conn, "UPDATE api_chaves SET ativa = :ativa WHERE id = :id"), {"ativa": False, "id": key_id})
+    exec_statement(conn, _sql(conn, "UPDATE api_chaves SET ativa = :ativa WHERE id = :id"), {"ativa": False, "id": key_id})
     conn.commit()
 
 

@@ -7,6 +7,7 @@ Decisões para aguentar mais e mais clientes:
   - HISTÓRICO: cada execução de cada cliente fica registrada na tabela `execucoes` (quando, status, linhas, mensagem);
   - INSIGHTS PRONTOS: depois de coletar, os insights do cliente são calculados UMA vez e guardados (API e dashboard só leem).
 """
+import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -15,11 +16,12 @@ from datetime import date, datetime, timezone
 from ga_project.clientes import Cliente, get_cliente, list_clientes
 from ga_project.coleta import collect_cliente
 from ga_project.dashboard_data import fetch_df
-from ga_project.database import _sql
+from ga_project.database import _sql, exec_statement
 from ga_project.errors import GA4ProjectError
 from ga_project.insights import refresh_insights
 
 MAX_MESSAGE = 500
+logger = logging.getLogger("ga_project.rotina")
 
 
 @dataclass
@@ -50,17 +52,18 @@ def order_by_staleness(conn, clientes: list[Cliente]) -> list[Cliente]:
 def record_execution(conn, slug: str, status: str, message: str, rows: int, start: datetime, end: datetime) -> None:
     """Registra a execução. Nunca derruba a rotina: se o registro falhar, só segue."""
     try:
-        conn.cursor().execute(
+        exec_statement(conn, 
             _sql(conn, "INSERT INTO execucoes (cliente_id, tipo, status, mensagem, linhas, inicio, fim) "
                        "VALUES (:c, 'coleta', :status, :msg, :linhas, :inicio, :fim)"),
             {"c": slug, "status": status, "msg": message[:MAX_MESSAGE], "linhas": rows, "inicio": start, "fim": end},
         )
         conn.commit()
     except Exception:
+        logger.warning("Não consegui registrar a execução do cliente %s", slug, exc_info=True)
         try:
             conn.rollback()
         except Exception:
-            pass
+            logger.debug("Rollback do registro de execução falhou (%s)", slug, exc_info=True)
 
 
 def _run_one(connect_fn, cliente: Cliente, ga4_client, gsc_service_factory, dias, today, fontes, with_insights,
@@ -82,9 +85,10 @@ def _run_one(connect_fn, cliente: Cliente, ga4_client, gsc_service_factory, dias
             try:
                 conn.rollback()
             except Exception:
-                pass
+                logger.debug("Rollback falhou após o erro de %s", cliente.slug, exc_info=True)
             text = str(exc) if isinstance(exc, GA4ProjectError) else f"{type(exc).__name__}: {exc}"
-            result = ClienteResultado(cliente.slug, "erro", {}, text, time.monotonic() - t0)
+            result = ClienteResultado(cliente.slug, "erro", dict(getattr(exc, "saved", {})), text,
+                                      time.monotonic() - t0)
         record_execution(conn, cliente.slug, result.status, result.mensagem, sum(result.linhas.values()), started,
                          datetime.now(timezone.utc))
         return result
